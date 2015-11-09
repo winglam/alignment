@@ -39,4 +39,12 @@ public class LogElement {
     public void setInput_type(INPUT_TYPE input_type) {
         this.input_type = input_type;
     }
+
+    @Override public String toString() {
+        return "LogElement{" +
+               "length=" + length +
+               ", content='" + content + '\'' +
+               ", input_type=" + input_type +
+               '}';
+    }
 }

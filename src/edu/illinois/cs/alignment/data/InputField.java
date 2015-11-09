@@ -53,4 +53,53 @@ public class InputField {
     public void setVisibility(Constants.VISIBILITY visibility) {
         this.visibility = visibility;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((labels == null) ? 0 : labels.hashCode());
+        result = prime * result + ((input_type == null) ? 0 : input_type.hashCode());
+        result = prime * result + (!isMandatory ? 0 : 1);
+        result = prime * result + ((visibility == null) ? 0 : visibility.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        InputField other = (InputField) obj;
+        if (labels == null) {
+            if (other.labels != null)
+                return false;
+        } else if (!labels.equals(other.labels))
+            return false;
+        if (input_type == null) {
+            if (other.input_type != null)
+                return false;
+        } else if (!input_type.equals(other.input_type))
+            return false;
+        if (isMandatory != other.isMandatory)
+            return false;
+        if (visibility == null) {
+            if (other.visibility != null)
+                return false;
+        } else if (!visibility.equals(other.visibility))
+            return false;
+        return true;
+    }
+
+    @Override public String toString() {
+        return "InputField{" +
+               "labels=" + labels +
+               ", input_type=" + input_type +
+               ", isMandatory=" + isMandatory +
+               ", visibility=" + visibility +
+               '}';
+    }
 }
