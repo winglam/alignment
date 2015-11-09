@@ -6,13 +6,11 @@ import java.util.List;
 /**
  * Created by winglam on 10/30/15.
  */
-public class Activity {
+public class Activity implements Comparable<Activity> {
     private List<InputField> fields;
-    private List<Activity> nextScreens;
 
-    public Activity(List<InputField> fields, List<Activity> nextScreens) {
+    public Activity(List<InputField> fields) {
         this.fields = fields;
-        this.nextScreens = nextScreens;
     }
 
     public List<InputField> getFields() {
@@ -23,11 +21,46 @@ public class Activity {
         this.fields = fields;
     }
 
-    public List<Activity> getNextScreens() {
-        return nextScreens;
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((fields == null) ? 0 : fields.hashCode());
+        return result;
     }
 
-    public void setNextScreens(ArrayList<Activity> nextScreens) {
-        this.nextScreens = nextScreens;
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Activity other = (Activity) obj;
+        if (fields == null) {
+            if (other.fields != null)
+                return false;
+        } else if (!fields.equals(other.fields))
+            return false;
+        return true;
+    }
+
+    @Override
+    public int compareTo(Activity arg) {
+        if (this.equals(arg)) {
+            return 0;
+        }
+        if (fields.size() > arg.getFields().size()) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+
+    @Override public String toString() {
+        return "Activity{" +
+               "fields=" + fields +
+               '}';
     }
 }
