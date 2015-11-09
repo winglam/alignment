@@ -2,15 +2,19 @@ package edu.illinois.cs.alignment.Main;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 import edu.illinois.cs.alignment.data.Activity;
 import edu.illinois.cs.alignment.data.InputField;
 import edu.illinois.cs.alignment.data.LogElement;
 import edu.illinois.cs.alignment.data.LogElementsWithWeight;
 import edu.illinois.cs.alignment.graph.Graph;
+import edu.illinois.cs.alignment.graph.Path;
+import edu.illinois.cs.alignment.graph.SinglePath;
 import edu.illinois.cs.alignment.util.Constants;
 
 /**
@@ -75,14 +79,59 @@ public class Main {
     public static void alignUserSessionToStartingActivity(List<LogElement> elements,
                                                           Activity startingActivity,
                                                           Graph<Activity, LogElementsWithWeight> graph) {
+        PriorityQueue<Path<Activity>> activePaths = new PriorityQueue<>();
+
+        setAllEdgeValue(elements, startingActivity, graph);
+        Map<Activity, List<LogElementsWithWeight>> outgoingNodeData = graph.getOutgoingNodeDatas(startingActivity);
+        for (Activity activity : outgoingNodeData.keySet()) {
+            activePaths.add(new Path<>(new SinglePath<>(startingActivity, activity,
+                                                        outgoingNodeData.get(activity).get(0))));
+        }
+
+        List<Path> completePaths = new ArrayList<>();
+        Activity minNode = startingActivity;
+        while (!activePaths.isEmpty()) {
+            Path<Activity> minPath = activePaths.remove();
+            if (minPath.size() != 0) {
+                minNode = minPath.get(minPath.size() - 1).getEndNode();
+            }
+
+            Map<Activity, List<LogElementsWithWeight>> nextNodes = graph.getOutgoingNodeDatas(minNode);
+            if (nextNodes.size() == 0) {
+                minPath.setSortWithWeight(true);
+                completePaths.add(minPath);
+            } else {
+                List<LogElement> remainingElements = minPath.get(minPath.size() - 1).getEdgeLabel().getElements();
+                for (Activity node : nextNodes.keySet()) {
+                    if (!remainingElements.isEmpty()) {
+                        setAllEdgeValue(remainingElements, minNode, graph);
+                        SinglePath<Activity> singlePath = new SinglePath<>(minNode, node, nextNodes.get(node).get(0));
+                        Path<Activity> newPath = new Path<>(minPath);
+                        newPath.add(singlePath);
+                        activePaths.add(newPath);
+                    }
+                }
+            }
+        }
+
+        Collections.sort(completePaths);
+        for (Path path : completePaths) {
+            System.out.println("Total Weight: " + path.getTotalWeight());
+            System.out.println("Path: ");
+            for (int i = 0; i < path.size(); i++) {
+                System.out.println(path.get(i));
+                System.out.println("----");
+            }
+            System.out.println();
+        }
+    }
+
+    private static void setAllEdgeValue(List<LogElement> elements, Activity startingActivity, Graph graph) {
         Map<Activity, List<LogElementsWithWeight>> outgoingNodeData = graph.getOutgoingNodeDatas(startingActivity);
         for (Activity activity : outgoingNodeData.keySet()) {
             LogElementsWithWeight elementsWithWeight = outgoingNodeData.get(activity).get(0);
             getEdgeValue(elements, activity.getFields(), elementsWithWeight);
-            alignUserSessionToStartingActivity(elementsWithWeight.getElements(), activity, graph);
         }
-
-        // Find highest rated path, reverse dijkstra's
     }
 
     private static void getEdgeValue(List<LogElement> remainingElements, List<InputField> inputs,
@@ -111,20 +160,6 @@ public class Main {
                 maxWeight.setElements(new ArrayList<>(remainingElements.subList(startIndex, remainingElements.size())));
             }
             getEdgeValue(remainingElements.subList(1, remainingElements.size()), inputs, maxWeight);
-        }
-    }
-
-    private static void  getInputsForGUIFlow(Activity currentActivity,
-                                             List<InputField> currentInputs,
-                                             List<List<InputField>> inputs,
-                                             Graph<Activity, Double> graph) {
-        if (currentActivity == null) {
-            inputs.add(currentInputs);
-        } else {
-            for (Activity activity : graph.getOutgoingNodeDatas(currentActivity).keySet()) {
-                currentInputs.addAll(activity.getFields());
-                getInputsForGUIFlow(activity, currentInputs, inputs, graph);
-            }
         }
     }
 }
