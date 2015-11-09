@@ -42,9 +42,7 @@ public class LogElement {
 
     @Override public String toString() {
         return "LogElement{" +
-               "length=" + length +
-               ", content='" + content + '\'' +
-               ", input_type=" + input_type +
+               "input_type=" + input_type +
                '}';
     }
 }

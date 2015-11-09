@@ -96,10 +96,7 @@ public class InputField {
 
     @Override public String toString() {
         return "InputField{" +
-               "labels=" + labels +
-               ", input_type=" + input_type +
-               ", isMandatory=" + isMandatory +
-               ", visibility=" + visibility +
+               "input_type=" + input_type +
                '}';
     }
 }
