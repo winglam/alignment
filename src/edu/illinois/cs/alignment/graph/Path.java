@@ -14,6 +14,7 @@ public class Path<D extends Comparable<D>> implements Comparable<Path<D>> {
     private List<SinglePath<D>> path;
     private Double totalWeight;
     private boolean sortWithWeight;
+    private Double maxWeight;
 
     // Abstraction Function:
     // Path, p, represents a path between two nodes that are connected by edge weights with type Double and other nodes.
@@ -29,6 +30,7 @@ public class Path<D extends Comparable<D>> implements Comparable<Path<D>> {
         path = new ArrayList<SinglePath<D>>();
         totalWeight = 0.0;
         sortWithWeight = false;
+        maxWeight = 0.0;
     }
 
     public Path(SinglePath<D> singlePath) {
@@ -47,6 +49,7 @@ public class Path<D extends Comparable<D>> implements Comparable<Path<D>> {
         path = new ArrayList<SinglePath<D>>(previousPath.path);
         totalWeight = previousPath.totalWeight;
         sortWithWeight = false;
+        maxWeight = previousPath.maxWeight;
     }
 
     /**
@@ -57,6 +60,7 @@ public class Path<D extends Comparable<D>> implements Comparable<Path<D>> {
      */
     public void add(SinglePath<D> singlePath) {
         totalWeight += singlePath.getEdgeLabel().getWeight();
+        maxWeight += singlePath.getEdgeLabel().getMaxWeight();
         path.add(singlePath);
     }
 
@@ -86,6 +90,10 @@ public class Path<D extends Comparable<D>> implements Comparable<Path<D>> {
      */
     public Double getTotalWeight() {
         return totalWeight;
+    }
+
+    public Double getMaxWeight() {
+        return maxWeight;
     }
 
     public void setSortWithWeight(boolean sortWithWeight) {

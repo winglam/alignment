@@ -120,7 +120,8 @@ public class SinglePath<D extends Comparable<D>> implements Comparable<SinglePat
 
     @Override public String toString() {
         return "StartNode=" + startNode +
+               "\nAcceptedElements=" + edgeLabel.getAcceptedElements() +
                "\nEndNode=" + endNode +
-               "\nEdgeLabelWeight=" + edgeLabel.getWeight();
+               "\nEdgeLabelWeight= " + edgeLabel.getWeight() + " / " + edgeLabel.getMaxWeight();
     }
 }

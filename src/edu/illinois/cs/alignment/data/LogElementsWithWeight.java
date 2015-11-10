@@ -7,16 +7,13 @@ import java.util.List;
  */
 public class LogElementsWithWeight implements Comparable<LogElementsWithWeight> {
     private Double weight;
-    private List<LogElement> elements;
-
-    public LogElementsWithWeight(Double weight, List<LogElement> elements) {
-        this.weight = weight;
-        this.elements = elements;
-    }
+    private List<LogElement> remainingElements;
+    private List<LogElement> acceptedElements;
+    private Double maxWeight;
 
     public LogElementsWithWeight() {
         this.weight = 0.0;
-        this.elements = null;
+        this.remainingElements = null;
     }
 
     public Double getWeight() {
@@ -27,18 +24,36 @@ public class LogElementsWithWeight implements Comparable<LogElementsWithWeight> 
         this.weight = weight;
     }
 
-    public List<LogElement> getElements() {
-        return elements;
+    public List<LogElement> getRemainingElements() {
+        return remainingElements;
     }
 
-    public void setElements(List<LogElement> elements) {
-        this.elements = elements;
+    public void setRemainingElements(List<LogElement> remainingElements) {
+        this.remainingElements = remainingElements;
+    }
+
+    public List<LogElement> getAcceptedElements() {
+        return acceptedElements;
+    }
+
+    public void setAcceptedElements(List<LogElement> acceptedElements) {
+        this.acceptedElements = acceptedElements;
+    }
+
+    public Double getMaxWeight() {
+        return maxWeight;
+    }
+
+    public void setMaxWeight(Double maxWeight) {
+        this.maxWeight = maxWeight;
     }
 
     @Override public String toString() {
         return "LogElementsWithWeight{" +
                "weight=" + weight +
-               ", elements=" + elements +
+               ", remainingElements=" + remainingElements +
+               ", acceptedElements=" + acceptedElements +
+               ", maxWeight =" + maxWeight +
                '}';
     }
 
@@ -55,13 +70,18 @@ public class LogElementsWithWeight implements Comparable<LogElementsWithWeight> 
         if (!weight.equals(that.weight)) {
             return false;
         }
-        return elements.equals(that.elements);
+        if (!maxWeight.equals(that.maxWeight)) {
+            return false;
+        }
+        return remainingElements.equals(that.remainingElements) && acceptedElements.equals(that.getAcceptedElements());
 
     }
 
     @Override public int hashCode() {
         int result = weight.hashCode();
-        result = 31 * result + elements.hashCode();
+        result = 31 * result + maxWeight.hashCode();
+        result = 31 * result + remainingElements.hashCode();
+        result = 31 * result + acceptedElements.hashCode();
         return result;
     }
 

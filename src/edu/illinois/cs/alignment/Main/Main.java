@@ -1,5 +1,6 @@
 package edu.illinois.cs.alignment.Main;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,7 +102,7 @@ public class Main {
                 minPath.setSortWithWeight(true);
                 completePaths.add(minPath);
             } else {
-                List<LogElement> remainingElements = minPath.get(minPath.size() - 1).getEdgeLabel().getElements();
+                List<LogElement> remainingElements = minPath.get(minPath.size() - 1).getEdgeLabel().getRemainingElements();
                 for (Activity node : nextNodes.keySet()) {
                     if (!remainingElements.isEmpty()) {
                         setAllEdgeValue(remainingElements, minNode, graph);
@@ -115,8 +116,11 @@ public class Main {
         }
 
         Collections.sort(completePaths);
+        NumberFormat formatter = NumberFormat.getPercentInstance();
+        formatter.setMaximumFractionDigits(1);
         for (Path path : completePaths) {
-            System.out.println("Total Weight: " + path.getTotalWeight());
+            System.out.println("Total Weight: " + path.getTotalWeight() + " / " + path.getMaxWeight()  +
+                               " (" + formatter.format((path.getTotalWeight()) / path.getMaxWeight()) + ")");
             System.out.println("Path: ");
             for (int i = 0; i < path.size(); i++) {
                 System.out.println(path.get(i));
@@ -135,31 +139,40 @@ public class Main {
     }
 
     private static void getEdgeValue(List<LogElement> remainingElements, List<InputField> inputs,
-                                       LogElementsWithWeight maxWeight) {
+                                       LogElementsWithWeight elementsWithWeight) {
         // TODO add weight for skipping elements
         if (remainingElements.size() > 0) {
             double matching = 0.0;
+            List<LogElement> acceptedElements = new ArrayList<>();
+            double totalWeight = 0.0;
             for (int i = 0; i < inputs.size() && i < remainingElements.size(); i++) {
                 Constants.INPUT_TYPE type = inputs.get(i).getInput_type();
+                if (inputTypeToVal.get(type) == null && !(inputTypeToVal.get(type) instanceof Double)) {
+                    throw new RuntimeException("Missing input type weight in inputTypeToVal.");
+                } else {
+                    totalWeight += (Double) inputTypeToVal.get(type);
+                }
+
                 if (type == remainingElements.get(i).getInput_type()) {
-                    if (inputTypeToVal.get(type) == null) {
-                        throw new RuntimeException("Missing input type weight in inputTypeToVal.");
-                    } else {
-                        matching += (Double) inputTypeToVal.get(type);
-                    }
+                    matching += (Double) inputTypeToVal.get(type);
+                    acceptedElements.add(remainingElements.get(i));
                 }
             }
-            if (matching > maxWeight.getWeight()) {
-                maxWeight.setWeight(matching);
+            if (matching > elementsWithWeight.getWeight()) {
+                elementsWithWeight.setWeight(matching);
                 int startIndex;
                 if (inputs.size() >= remainingElements.size()) {
                     startIndex = 0;
                 } else {
                     startIndex = inputs.size();
                 }
-                maxWeight.setElements(new ArrayList<>(remainingElements.subList(startIndex, remainingElements.size())));
+                elementsWithWeight.setMaxWeight(totalWeight);
+                elementsWithWeight.setAcceptedElements(acceptedElements);
+                elementsWithWeight.setRemainingElements(new ArrayList<>(remainingElements.subList(startIndex,
+                                                                                                  remainingElements
+                                                                                                          .size())));
             }
-            getEdgeValue(remainingElements.subList(1, remainingElements.size()), inputs, maxWeight);
+            getEdgeValue(remainingElements.subList(1, remainingElements.size()), inputs, elementsWithWeight);
         }
     }
 }
