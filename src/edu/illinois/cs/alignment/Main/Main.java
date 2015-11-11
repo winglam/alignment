@@ -41,7 +41,8 @@ public class Main {
         Activity flow1Screen2 = new Activity(Arrays.asList(strInput1, intInput1, strInput2));
 
         InputField emailInput = new InputField(null, Constants.INPUT_TYPE.EMAIL, true, Constants.VISIBILITY.VISIBLE);
-        InputField passwordInput = new InputField(null, Constants.INPUT_TYPE.PASSWORD, true, Constants.VISIBILITY.VISIBLE);
+        InputField passwordInput = new InputField(null, Constants.INPUT_TYPE.PASSWORD, true,
+                                                  Constants.VISIBILITY.VISIBLE);
         Activity flow1Screen1 = new Activity(Arrays.asList(emailInput, passwordInput));
 
         graph.addNode(flow1Screen1);
@@ -77,8 +78,7 @@ public class Main {
         alignUserSessionToStartingActivity(elements, startingActivity, graph);
     }
 
-    public static void alignUserSessionToStartingActivity(List<LogElement> elements,
-                                                          Activity startingActivity,
+    public static void alignUserSessionToStartingActivity(List<LogElement> elements, Activity startingActivity,
                                                           Graph<Activity, LogElementsWithWeight> graph) {
         PriorityQueue<Path<Activity>> activePaths = new PriorityQueue<>();
 
@@ -102,7 +102,8 @@ public class Main {
                 minPath.setSortWithWeight(true);
                 completePaths.add(minPath);
             } else {
-                List<LogElement> remainingElements = minPath.get(minPath.size() - 1).getEdgeLabel().getRemainingElements();
+                List<LogElement> remainingElements = minPath.get(minPath.size() - 1).getEdgeLabel()
+                                                             .getRemainingElements();
                 for (Activity node : nextNodes.keySet()) {
                     if (!remainingElements.isEmpty()) {
                         setAllEdgeValue(remainingElements, minNode, graph);
@@ -118,9 +119,15 @@ public class Main {
         Collections.sort(completePaths);
         NumberFormat formatter = NumberFormat.getPercentInstance();
         formatter.setMaximumFractionDigits(1);
+        double maxWeight = 0.0;
+        for (LogElement element : elements) {
+            maxWeight += inputTypeToWeight(element);
+        }
+        System.out.println("Log elements: ");
+        System.out.println(elements + "\n");
         for (Path path : completePaths) {
-            System.out.println("Total Weight: " + path.getTotalWeight() + " / " + path.getMaxWeight()  +
-                               " (" + formatter.format((path.getTotalWeight()) / path.getMaxWeight()) + ")");
+            System.out.println("Total/Maximum weight: " + path.getTotalWeight() + " / " + maxWeight + " (" +
+                               formatter.format((path.getTotalWeight()) / maxWeight) + ")");
             System.out.println("Path: ");
             for (int i = 0; i < path.size(); i++) {
                 System.out.println(path.get(i));
@@ -130,34 +137,55 @@ public class Main {
         }
     }
 
+    private static double inputTypeToWeight(LogElement element) {
+        Constants.INPUT_TYPE type = element.getInput_type();
+        if (inputTypeToVal.get(type) == null && !(inputTypeToVal.get(type) instanceof Double)) {
+            throw new RuntimeException("Missing input type weight in inputTypeToVal.");
+        } else {
+            return (Double) inputTypeToVal.get(type);
+        }
+    }
+
     private static void setAllEdgeValue(List<LogElement> elements, Activity startingActivity, Graph graph) {
         Map<Activity, List<LogElementsWithWeight>> outgoingNodeData = graph.getOutgoingNodeDatas(startingActivity);
         for (Activity activity : outgoingNodeData.keySet()) {
             LogElementsWithWeight elementsWithWeight = outgoingNodeData.get(activity).get(0);
             getEdgeValue(elements, activity.getFields(), elementsWithWeight);
+
+            List<LogElement> parsedElements;
+            if (graph.getOutgoingNodeDatas(activity).size() == 0) {
+                parsedElements = elements;
+            } else {
+                List<LogElement> lastAcceptedElements = elementsWithWeight.getAcceptedElements();
+                LogElement lastAcceptedElement = lastAcceptedElements.get(lastAcceptedElements.size() - 1);
+                parsedElements = elements.subList(0, elements.indexOf(lastAcceptedElement) + 1);
+            }
+            double maxWeightForEdge = 0.0;
+            for (LogElement element : parsedElements) {
+                maxWeightForEdge += inputTypeToWeight(element);
+            }
+            elementsWithWeight.setMaxWeight(maxWeightForEdge);
         }
     }
 
     private static void getEdgeValue(List<LogElement> remainingElements, List<InputField> inputs,
-                                       LogElementsWithWeight elementsWithWeight) {
+                                     LogElementsWithWeight elementsWithWeight) {
         // TODO add weight for skipping elements
         if (remainingElements.size() > 0) {
             double matching = 0.0;
             List<LogElement> acceptedElements = new ArrayList<>();
-            double totalWeight = 0.0;
             for (int i = 0; i < inputs.size() && i < remainingElements.size(); i++) {
                 Constants.INPUT_TYPE type = inputs.get(i).getInput_type();
-                if (inputTypeToVal.get(type) == null && !(inputTypeToVal.get(type) instanceof Double)) {
-                    throw new RuntimeException("Missing input type weight in inputTypeToVal.");
-                } else {
-                    totalWeight += (Double) inputTypeToVal.get(type);
-                }
-
                 if (type == remainingElements.get(i).getInput_type()) {
-                    matching += (Double) inputTypeToVal.get(type);
-                    acceptedElements.add(remainingElements.get(i));
+                    if (inputTypeToVal.get(type) == null && !(inputTypeToVal.get(type) instanceof Double)) {
+                        throw new RuntimeException("Missing input type weight in inputTypeToVal.");
+                    } else {
+                        acceptedElements.add(remainingElements.get(i));
+                        matching += (Double) inputTypeToVal.get(type);
+                    }
                 }
             }
+
             if (matching > elementsWithWeight.getWeight()) {
                 elementsWithWeight.setWeight(matching);
                 int startIndex;
@@ -166,7 +194,6 @@ public class Main {
                 } else {
                     startIndex = inputs.size();
                 }
-                elementsWithWeight.setMaxWeight(totalWeight);
                 elementsWithWeight.setAcceptedElements(acceptedElements);
                 elementsWithWeight.setRemainingElements(new ArrayList<>(remainingElements.subList(startIndex,
                                                                                                   remainingElements
