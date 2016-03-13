@@ -34,16 +34,18 @@ public class Main {
         Graph<Activity, LogElementsWithWeight> graph = new Graph<>();
 
         // TODO can we assume program analysis from before will tell us which screens come before which?
+
+/*
         // GUI flow 1
         InputField strInput1 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.VISIBLE);
         InputField intInput1 = new InputField(null, Constants.INPUT_TYPE.INTEGER, false, Constants.VISIBILITY.VISIBLE);
         InputField strInput2 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.VISIBLE);
-        Activity flow1Screen2 = new Activity(Arrays.asList(strInput1, intInput1, strInput2));
+        Activity flow1Screen2 = new Activity("f1s2",Arrays.asList(strInput1, intInput1, strInput2));
 
         InputField emailInput = new InputField(null, Constants.INPUT_TYPE.EMAIL, true, Constants.VISIBILITY.VISIBLE);
         InputField passwordInput = new InputField(null, Constants.INPUT_TYPE.PASSWORD, true,
                                                   Constants.VISIBILITY.VISIBLE);
-        Activity flow1Screen1 = new Activity(Arrays.asList(emailInput, passwordInput));
+        Activity flow1Screen1 = new Activity("f1s1", Arrays.asList(emailInput, passwordInput));
 
         graph.addNode(flow1Screen1);
         graph.addNode(flow1Screen2);
@@ -51,17 +53,17 @@ public class Main {
 
         // GUI flow 2
         InputField strInput3 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.VISIBLE);
-        Activity flow2Screen2 = new Activity(Arrays.asList(strInput3));
+        Activity flow2Screen2 = new Activity("f2s2", Arrays.asList(strInput3));
 
         InputField strInput4 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.VISIBLE);
         InputField intInput2 = new InputField(null, Constants.INPUT_TYPE.INTEGER, false, Constants.VISIBILITY.VISIBLE);
-        Activity flow2Screen1 = new Activity(Arrays.asList(strInput4, intInput2));
+        Activity flow2Screen1 = new Activity("f2s1", Arrays.asList(strInput4, intInput2));
 
         graph.addNode(flow2Screen1);
         graph.addNode(flow2Screen2);
         graph.addEdge(flow2Screen1, flow2Screen2, new LogElementsWithWeight());
 
-        Activity startingActivity = new Activity(null);
+        Activity startingActivity = new Activity("starting", null);
         graph.addNode(startingActivity);
         graph.addEdge(startingActivity, flow1Screen1, new LogElementsWithWeight());
         graph.addEdge(startingActivity, flow2Screen1, new LogElementsWithWeight());
@@ -74,8 +76,69 @@ public class Main {
         LogElement element5 = new LogElement("456", Constants.INPUT_TYPE.INTEGER);
         LogElement element6 = new LogElement("string2", Constants.INPUT_TYPE.STRING);
         List<LogElement> elements = Arrays.asList(element1, element2, element3, element4, element5, element6);
+*/
 
-        alignUserSessionToStartingActivity(elements, startingActivity, graph);
+
+        //Home activity
+        Activity startingAct = new Activity("startingAct", null);
+        //ExpenseNewTransaction
+        InputField amount1 = new InputField(null, Constants.INPUT_TYPE.INTEGER, true, Constants.VISIBILITY.INVISIBLE);
+        InputField payer1 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.INVISIBLE);
+        InputField ref1 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.INVISIBLE);
+        InputField des1 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.INVISIBLE);
+        Activity ExpenseNewTransactionAct = new Activity("ExpenseNewTransactionAct", Arrays.asList(amount1, payer1,
+                                                                                                   ref1, des1));
+        //RecurringList
+        Activity recurringList = new Activity("recurringList", new ArrayList<InputField>());
+        //ExpenseRepeatingTransaction
+        InputField des2 = new InputField(null, Constants.INPUT_TYPE.STRING, true, Constants.VISIBILITY.INVISIBLE);
+        InputField amount2 = new InputField(null, Constants.INPUT_TYPE.INTEGER, true, Constants.VISIBILITY.INVISIBLE);
+        InputField tax2 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.INVISIBLE);
+        InputField ref2 = new InputField(null, Constants.INPUT_TYPE.INTEGER, true, Constants.VISIBILITY.INVISIBLE);
+        Activity ExpenseRepeatingTransactionAct = new Activity("ExpenseRepeatingTransactionAct", Arrays.asList(des2,
+                                                                                                               amount2,
+                                                                                                               tax2,
+                                                                                                               ref2));
+        //accountList
+        Activity accountListAct = new Activity("accountListAct", new ArrayList<InputField>());
+        //ExpenseNewAccount
+        InputField name3 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.INVISIBLE);
+        InputField des3 = new InputField(null, Constants.INPUT_TYPE.STRING, false, Constants.VISIBILITY.INVISIBLE);
+        InputField bal3 = new InputField(null, Constants.INPUT_TYPE.INTEGER, false, Constants.VISIBILITY.INVISIBLE);
+        Activity ExpenseNewAccountAct = new Activity("ExpenseNewAccountAct", Arrays.asList(name3, des3, bal3));
+
+
+        graph.addNode(startingAct);
+        graph.addNode(ExpenseNewTransactionAct);
+        graph.addNode(accountListAct);
+        graph.addNode(recurringList);
+        graph.addNode(ExpenseNewAccountAct);
+        graph.addNode(ExpenseRepeatingTransactionAct);
+        graph.addEdge(startingAct, ExpenseNewTransactionAct, new LogElementsWithWeight());
+        graph.addEdge(startingAct, accountListAct, new LogElementsWithWeight());
+        graph.addEdge(startingAct, recurringList, new LogElementsWithWeight());
+        graph.addEdge(accountListAct, ExpenseNewAccountAct, new LogElementsWithWeight());
+        graph.addEdge(recurringList, ExpenseRepeatingTransactionAct, new LogElementsWithWeight());
+
+        List<LogElement> elements = new ArrayList<>();
+        LogElement element1 = new LogElement("100", Constants.INPUT_TYPE.INTEGER);
+        LogElement element2 = new LogElement("davis li", Constants.INPUT_TYPE.STRING);
+        LogElement element3 = new LogElement("PNC", Constants.INPUT_TYPE.STRING);
+        LogElement element4 = new LogElement("primary bank", Constants.INPUT_TYPE.STRING);
+        LogElement element5 = new LogElement("1000", Constants.INPUT_TYPE.INTEGER);
+        LogElement element6 = new LogElement("apartment rate", Constants.INPUT_TYPE.STRING);
+        LogElement element7 = new LogElement("500", Constants.INPUT_TYPE.INTEGER);
+        LogElement element8 = new LogElement("10", Constants.INPUT_TYPE.INTEGER);
+        elements.add(element1);
+        elements.add(element2);
+        elements.add(element3);
+        elements.add(element4);
+        elements.add(element5);
+        elements.add(element6);
+        elements.add(element7);
+        elements.add(element8);
+
+        alignUserSessionToStartingActivity(elements, startingAct, graph);
     }
 
     public static void alignUserSessionToStartingActivity(List<LogElement> elements, Activity startingActivity,
@@ -153,7 +216,7 @@ public class Main {
             getEdgeValue(elements, activity.getFields(), elementsWithWeight);
 
             List<LogElement> parsedElements;
-            if (graph.getOutgoingNodeDatas(activity).size() == 0) {
+            if (elementsWithWeight.getAcceptedElements().isEmpty()) {
                 parsedElements = elements;
             } else {
                 List<LogElement> lastAcceptedElements = elementsWithWeight.getAcceptedElements();
@@ -186,7 +249,8 @@ public class Main {
                 }
             }
 
-            if (matching > elementsWithWeight.getWeight()) {
+            double weight = elementsWithWeight.getWeight();
+            if (matching >= weight) {
                 elementsWithWeight.setWeight(matching);
                 int startIndex;
                 if (inputs.size() >= remainingElements.size()) {
@@ -198,8 +262,10 @@ public class Main {
                 elementsWithWeight.setRemainingElements(new ArrayList<>(remainingElements.subList(startIndex,
                                                                                                   remainingElements
                                                                                                           .size())));
+                if (matching > weight) {
+                    getEdgeValue(remainingElements.subList(1, remainingElements.size()), inputs, elementsWithWeight);
+                }
             }
-            getEdgeValue(remainingElements.subList(1, remainingElements.size()), inputs, elementsWithWeight);
         }
     }
 }
